@@ -2,6 +2,7 @@ import logging
 
 import aiohttp
 import aiohttp_jinja2
+import os
 from aiohttp import web
 from faker import Faker
 from PIL import Image
@@ -60,37 +61,38 @@ async def index(request):
 
     await ws_current.prepare(request)
 
-    name = get_random_name()
-    log.info('%s joined.', name)
-
-    await ws_current.send_json({'action': 'connect', 'name': name})
-
-    for ws in request.app['websockets'].values():
-        await ws.send_json({'action': 'join', 'name': name})
+    if os.path.exists("embedding.npy"):
+        await ws_current.send_str("{'accion':'entrenado'}")
+    #await ws_current.send_json({'action': 'connect', 'name': name})
+    #data = request.query()
+    name = request.query['room']
+    print(name)
     request.app['websockets'][name] = ws_current
-
+       
     while True:
-        msg = await ws_current.receive()        
-
+        msg = await ws_current.receive()
         if msg.type == aiohttp.WSMsgType.text:
             for ws in request.app['websockets'].values():
-                if ws is not ws_current:
-                    frame = msg.data.split(';base64,')
-                    image = Image.open(BytesIO(base64.b64decode(frame[1])))
-                    image.save('accept.png', 'PNG')   
-                    #image = np.array(image) 
-                    #image = image.to_ndarray(format="bgr24")   
-                    image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
-                    faces,_ = get_faces_live(
-                        img = image,
-                        pnet = pnet,
-                        rnet = rnet,
-                        onet = onet,
-                        image_size = image_size
-                    )           
-                    #print(len(faces))
-                    entrar = True
-                    if entrar == False:                            
+                if ws is ws_current:
+                    # break for;
+                    try:
+                        params = json.loads(msg.data)              
+                    except e:
+                        print(e)
+                    
+                    if params['accion'] == 'entrenar':
+                        print('estoy entrenando...')
+                        frame = params['data'].split(';base64,')
+                        image = Image.open(BytesIO(base64.b64decode(frame[1])))
+                        image.save('accept.png', 'PNG')  
+                        image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
+                        faces,_ = get_faces_live(
+                            img = image,
+                            pnet = pnet,
+                            rnet = rnet,
+                            onet = onet,
+                            image_size = image_size
+                        )     
                         if len(faces) == 1 :
                             embedding = forward_pass(
                                 img= faces[0],
@@ -105,9 +107,28 @@ async def index(request):
                                 embedding=embedding,
                                 filename=filename,
                                 embeddings_path=""
-                            )    
+                            )   
+                            await ws_current.send_str("{'accion':'entrenado'}")
+                        elif len(faces) > 1:
+                            await ws_current.send_str("'accion':'no_entrenado','razon':'multiples rostros detectados'")
+                            print('multiples rostros detectados')
+                        else:
+                            await ws_current.send_str("'accion':'no_entrenado','razon':'No se detecto rostro'")
+                            print('ningun rostro detectado')       
 
-                    if entrar == True:
+                    if params['accion'] == 'validar':
+                        print('estoy validando...')
+                        frame = params['data'].split(';base64,')
+                        image = Image.open(BytesIO(base64.b64decode(frame[1])))
+                        image.save('accept.png', 'PNG')  
+                        image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
+                        faces,_ = get_faces_live(
+                            img = image,
+                            pnet = pnet,
+                            rnet = rnet,
+                            onet = onet,
+                            image_size = image_size
+                        )     
                         embedding_dict = load_embeddings()                 
                         if len(faces)==1:                                                                
                             face_embedding = forward_pass(
@@ -122,20 +143,21 @@ async def index(request):
                                 embedding=face_embedding,
                                 embedding_dict=embedding_dict
                             )                                            
-                            if status == True:                                                   
+                            if status == True:      
+                                await ws_current.send_str("'accion':'comparado','resultado':'1'")                                             
                                 print('identificado')
                             else:
-                                print('No identificado') 
-
-                    await ws.send_json(
-                        {'action': 'sent', 'name': name, 'text': msg.data})
-        else:
-            break
-
-    del request.app['websockets'][name]
-    log.info('%s disconnected.', name)
-    for ws in request.app['websockets'].values():
-        await ws.send_json({'action': 'disconnect', 'name': name})
+                                await ws_current.send_str("'accion':'comparado','resultado':'0'")                                             
+                                print('No identificado')   
+                        elif len(faces) > 1:
+                            await ws_current.send_str("'accion':'comparado','resultado':'0','error':'multiples rostros detectados'")                                             
+                            print('multiples rostros detectados')
+                        else:
+                            await ws_current.send_str("'accion':'comparado','resultado':'0','error':'ningun rostro detectado'")                                             
+                            print('ningun rostro detectado')
+                        break
+        #else:
+         #   break    
 
     return ws_current
 

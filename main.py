@@ -21,6 +21,9 @@ async def init_app():
 
     app.router.add_get('/test', test)
     app.router.add_get('/ws', index)
+    app.router.add_post('/entrenar',entrenar)
+    app.router.add_post('/validar',validar)
+
 
     return app
 

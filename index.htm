@@ -3,7 +3,7 @@
     <body>
         <video playsinline="" autoplay="" width="320" height="240"></video>
         <canvas width="320" height="240"></canvas>
-        <button onclick="enviar()">Entrenar</button>
+        <button onclick="entrenar()">Entrenar</button>
         <button onclick="validar()">Validar</button>
         <script>
             const video = document.querySelector('video');
@@ -23,18 +23,19 @@
                 // console.log(dataURL)
             }
 
-            function enviar() {
-                var data64 = canvas.toDataURL();
-                socketAsyn.send(data64);
+            function entrenar() {
+                var data64 = canvas.toDataURL();                
+                socketAsyn.send('{"data":"'+data64+'","accion":"entrenar"}');                                
                 console.log("enviado?");
             }
             function validar(){
-                socketAsyn.send('validar')
+                var data64 = canvas.toDataURL();                
+                socketAsyn.send('{"data":"'+data64+'","accion":"validar"}');
                 console.log('validado?')
             }
 
             init();
-            var socketAsyn = new WebSocket("ws://192.168.100.218:8080/ws");
+            var socketAsyn = new WebSocket("ws://192.168.100.218:8080/ws?room=viclass");
             socketAsyn.onmessage = function(e) { console.log(e.data); };
             socketAsyn.onopen = function() { console.log("abierto"); };
             socketAsyn.onerror = function(e){ console.log(e); }
