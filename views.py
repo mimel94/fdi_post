@@ -13,6 +13,7 @@ import numpy as np
 from scipy.misc import imread
 import base64
 from io import BytesIO
+from settings import *
 from lib.src.align import detect_face  # for MTCNN face detection
 log = logging.getLogger(__name__)
 from utils import (
@@ -33,6 +34,8 @@ model_path = 'model/20170512-110547/20170512-110547.pb'
 facenet_model = load_model(model_path)
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+logger = logging.getLogger("pc")
 image_size = 160
 image2Train = ''
 
@@ -46,32 +49,21 @@ facenet_persistent_session = tf.Session(graph=facenet_model, config=config)
 # Create Multi-Task Cascading Convolutional (MTCNN) neural networks for Face Detection
 pnet, rnet, onet = detect_face.create_mtcnn(sess=facenet_persistent_session, model_path=None)
 
+rutaHarr=''
 
 
-async def index(request):
-    '''ws_current = web.WebSocketResponse()
-    ws_ready = ws_current.can_prepare(request)
-    #if not ws_ready.ok:
-    #    return aiohttp_jinja2.render_template('index.html', request, {})
-
-    await ws_current.prepare(request)
-
-    if os.path.exists("embedding.npy"):
-        await ws_current.send_str("{'accion':'entrenado'}")
-    #await ws_current.send_json({'action': 'connect', 'name': name})
-    #data = request.query()
-    name = request.query['room']
-    print(name)
-    request.app['websockets'][name] = ws_current '''     
-
+async def index(request):   
     return aiohttp_jinja2.render_template('index.html', request,{})
 
 def estado(request):
-    if os.path.exists("embedding.npy"):
-        mensaje = "{'estado':'1'}" 
+    params = await request.post()    
+    rutaHaar = RUTA_ABS + '/vision/embeddings/'+ str(params['usuario']) 
+    if os.path.exists(rutaHaar+'/'+str(params['usuario'])+'.npy'):
+        #await ws.send_str("{'accion':'entrenado'}")    
+        mensaje = {'accion':'iniciando','status':'1'}
     else:
-        mensaje = "{'estado':'1'}" 
-    
+        mensaje = {'accion':'iniciando','status':'0'}"
+
     return web.Response(
         content_type="application/json",
         text=json.dumps(
@@ -80,11 +72,11 @@ def estado(request):
     ) 
    
 async def entrenar(request):     
-    params = await request.post()  
-    print('estoy entrenando...')
+    params = await request.post()     
+    rutaHaar = RUTA_ABS + '/vision/embeddings/'+ str(params['usuario']) 
     frame = params['data'].split(';base64,')
     image = Image.open(BytesIO(base64.b64decode(frame[1])))
-    image.save('accept.png', 'PNG')     
+    #image.save('accept.png', 'PNG')     
     image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     faces,_ = get_faces_live(
         img = image,
@@ -102,11 +94,11 @@ async def entrenar(request):
             phase_train_placeholder=phase_train_placeholder,
             image_size=image_size
         )      
-        filename = 'embedding'
+        filename = str(params['usuario'])        
         save_embedding(
             embedding=embedding,
             filename=filename,
-            embeddings_path=""
+            embeddings_path=rutaHaar
         )   
         mensaje = "{'accion':'entrenado'}"
     elif len(faces) > 1:
@@ -125,15 +117,9 @@ async def entrenar(request):
     )      
 
 async def validar(request):
-    params = await request.post() 
-    for key,value in request.query.items():
-        print("{}: {}".format(key, value))
-    print('estoy validando...')
-    print(params['accion'])
+    params = await request.post()     
     frame = params['data'].split(';base64,')
-    image = Image.open(BytesIO(base64.b64decode(frame[1])))
-    image.save('accept.png', 'PNG')  
- 
+    image = Image.open(BytesIO(base64.b64decode(frame[1])))  
     image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     faces,_ = get_faces_live(
         img = image,
@@ -142,7 +128,7 @@ async def validar(request):
         onet = onet,
         image_size = image_size
     )     
-    embedding_dict = load_embeddings()                                    
+    embedding_dict = load_embeddings(params['usuario'])                                   
     if len(faces)==1:                                                                                                                                  
         face_embedding = forward_pass(
             img = faces[0],
