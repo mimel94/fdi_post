@@ -5,7 +5,7 @@ import jinja2, json
 
 import aiohttp_jinja2
 from aiohttp import web
-from aiohttpdemo_chat.views import index, test
+from aiohttpdemo_chat.views import test, entrenar, validar, estado, index
 
 
 async def init_app():
@@ -20,9 +20,10 @@ async def init_app():
         app, loader=jinja2.PackageLoader('aiohttpdemo_chat', 'templates'))
 
     app.router.add_get('/test', test)
-    app.router.add_get('/ws', index)
+    app.router.add_get('/', index)
     app.router.add_post('/entrenar',entrenar)
     app.router.add_post('/validar',validar)
+    app.router.add_post('/estado',estado)
 
 
     return app
