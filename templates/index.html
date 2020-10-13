@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <video playsinline="" autoplay="" width="320" height="240"></video>
+        <canvas width="320" height="240"></canvas>
+        <button class="entrenar">Entrenar</button>
+        <button class='validar' >Validar</button>
+        <button class='inicio_asistencia' >Inicio Muestra</button>
+        <button class='muestra_asistencia' >envio Muestra</button>
+        <button class='terminar_asistencia' >Terminar Muestra</button>
+        <button class='reporte_asistencia' >Reporte Asistencia</button>
+        
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <script>
+            const video = document.querySelector('video');
+            const canvas = window.canvas = document.querySelector('canvas');
+            const id_user_quemado = "69";
+
+            async function init ()  {
+                const stream = await navigator.mediaDevices.getUserMedia({audio: false,video: true});
+                window.stream = stream;
+                video.srcObject = stream;
+            }
+
+            function getImage() {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                // var dataURL = canvas.toDataURL()
+                // console.log(dataURL)
+            }
+
+            /*function entrenar() {
+                var data64 = canvas.toDataURL();     
+                socketAsyn.send('{"data":"'+data64+'","accion":"entrenar"}');                                
+                console.log("enviado?");
+            }
+            function validar(){ 
+                var data64 = canvas.toDataURL();                
+                socketAsyn.send('{"data":"'+data64+'","accion":"validar"}');
+                console.log('validado?')
+            }*/
+
+            init();
+            var socketAsyn = new WebSocket("ws://192.168.100.218:8080/ws?room=viclass");
+            socketAsyn.onmessage = function(e) { console.log(e.data); };
+            socketAsyn.onopen = function() { console.log("abierto"); };
+            socketAsyn.onerror = function(e){ console.log(e); }
+            setInterval(function(){getImage()}, 1000 / 25);          
+
+            $(document).ready(function(){
+                
+                $('.validar').click(function(){
+                    var data64 = canvas.toDataURL();
+                    let mensaje = {"data":data64,"accion":"validar","id_usuario":id_user_quemado};
+                    $.ajax({
+                        url : 'http://localhost:8080/validar',
+                        method : 'POST',
+                        data : mensaje,                        
+                        dataType: 'text',
+                        success : function(data){
+                            //alert('se envio ok')
+                            console.log(data)
+                        }
+                    });
+
+                });
+                $('.entrenar').click(function(){
+                    var data64 = canvas.toDataURL();
+                    let mensaje = {"data":data64,"accion":"entrenar","id_usuario":id_user_quemado};
+                    $.ajax({
+                        url : 'http://localhost:8080/entrenar',
+                        method : 'POST',
+                        data : mensaje,                        
+                        dataType: 'text',
+                        success : function(data){
+                            //alert('se envio ok')
+                            console.log(data)
+                        }
+                    });
+
+                });
+                $('.inicio_asistencia').click(function(){                   
+                    let mensaje = {"id_usuario":id_user_quemado,"id_room":"12345","seg_tick":1200,"datetime_inicio":"2018-06-29 10:00:00","datetime_fin":"2018-06-29 11:30:00"};
+                    $.ajax({
+                        url : 'http://localhost:8080/asis/iniciar',
+                        method : 'POST',
+                        data : mensaje,                        
+                        dataType: 'text',
+                        success : function(data){
+                            //alert('se envio ok')
+                            console.log(data)
+                        }
+                    });
+
+                });
+                $('.terminar_asistencia').click(function(){                   
+                    let mensaje = {"id_usuario":id_user_quemado,"id_room":"12345"};
+                    $.ajax({
+                        url : 'http://localhost:8080/asis/terminar',
+                        method : 'POST',
+                        data : mensaje,                        
+                        dataType: 'text',
+                        success : function(data){
+                            //alert('se envio ok')
+                            console.log(data)
+                        }
+                    });
+
+                });
+                $('.muestra_asistencia').click(function(){   
+                    var data64 = canvas.toDataURL();                                  
+                    let mensaje = {"data":data64,"id_usuario":id_user_quemado,"id_room":"12345"};
+                    $.ajax({
+                        url : 'http://localhost:8080/asis/enviar_muestra',
+                        method : 'POST',
+                        data : mensaje,                        
+                        dataType: 'text',
+                        success : function(data){
+                            //alert('se envio ok')
+                            console.log(data)
+                        }
+                    });
+
+                });
+                $('.reporte_asistencia').click(function(){   
+                    var data64 = canvas.toDataURL();                                  
+                    let mensaje = {"data":data64,"id_usuario":id_user_quemado,"id_room":"12345"};
+                    $.ajax({
+                        url : 'http://localhost:8080/asis/reporte',
+                        method : 'POST',
+                        data : mensaje,                        
+                        dataType: 'text',
+                        success : function(data){
+                            //alert('se envio ok')
+                            console.log(data)
+                        }
+                    });
+
+                });
+
+
+            });  
+        </script>
+        
+    </body>
+</html>

@@ -5,7 +5,7 @@ import jinja2, json
 
 import aiohttp_jinja2
 from aiohttp import web
-from aiohttpdemo_chat.views import test, entrenar, validar, estado, index
+from aiohttpdemo_chat.views import *
 
 
 async def init_app():
@@ -24,6 +24,11 @@ async def init_app():
     app.router.add_post('/entrenar',entrenar)
     app.router.add_post('/validar',validar)
     app.router.add_post('/estado',estado)
+    app.router.add_post('/asis/iniciar',inicio_asistencia)
+    app.router.add_post('/asis/terminar',terminar_asistencia)
+    app.router.add_post('/asis/enviar_muestra',muestra_asistencia)
+    app.router.add_post('/asis/reporte',reporte_asistencia)
+    
 
 
     return app
