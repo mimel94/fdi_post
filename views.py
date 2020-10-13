@@ -279,22 +279,30 @@ async def reporte_asistencia(request):
     params = await request.post()
     total_muestras = client.hget(params['id_room'], 'data').decode('utf-8')                        
     total_muestras = json.loads(total_muestras)
+    lista_estudiantes = client.lrange("lista_"+params['id_room'],0,-1)
+    lista_porcentajes = {}
+    
+    for estudiante in lista_estudiantes:    
+        try:
+            contador_asistencia = client.get("muestras"+estudiante.decode('utf-8'))
+            contador_asistencia = int(contador_asistencia.decode("utf-8"))
+            porcentaje_asistencia = contador_asistencia * 100 / int(total_muestras['total_muestras'])  
+        except:
+            pass
+        if not contador_asistencia:                                                
+            mensaje = "El porcentaje de sistencia es: 0%"
+        else:         
+            mensaje = "El porcentaje de sistencia es: "+str(int(porcentaje_asistencia))+"%"
 
-    try:
-        contador_asistencia = client.get("muestras"+params['id_usuario'])
-        contador_asistencia = int(contador_asistencia.decode("utf-8"))
-        porcentaje_asistencia = contador_asistencia * 100 / int(total_muestras['total_muestras'])  
-    except:
-        pass
-    if not contador_asistencia:                                                
-        mensaje = "El porcentaje de sistencia es: 0%"
-    else:         
-        mensaje = "El porcentaje de sistencia es: "+str(int(porcentaje_asistencia))+"%"
-
+        lista_porcentajes[estudiante.decode('utf-8')] = porcentaje_asistencia
+        mensaje = ''
+        porcentaje_asistencia = 0
+    reporte = {'curso':params['id_room'],'asistencia':lista_porcentajes}
+    
     return web.Response(
         content_type="application/json",
         text=json.dumps(
-            mensaje
+            reporte
         ),
     )
 
