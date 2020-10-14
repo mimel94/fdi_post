@@ -45,6 +45,10 @@ global seg_tick
 global datetime_inicio
 global datetime_fin
 lista_asistencia = list()
+global  lista_porcentaje
+lista_porcentajes = {}
+global porcentaje_asistencia
+porcentaje_asistencia = 0
 
 images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
 embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
@@ -59,16 +63,7 @@ pnet, rnet, onet = detect_face.create_mtcnn(sess=facenet_persistent_session, mod
 rutaHarr=''
 global client
 client = redis.Redis(host='localhost', port= 6379)
-
-class Alumno:
-    id = ''
-    asistencia = 0
-
-def registrar_alumno(id):
-    a = Alumno()
-    a.id = id
-    if a.id not in lista_asistencia:
-        lista_asistencia.append(a)       
+   
 
 async def index(request):   
     return aiohttp_jinja2.render_template('index.html', request,{})
@@ -204,11 +199,17 @@ async def inicio_asistencia(request):
         ),       
     ))
 
-async def terminar_asistencia(request):    
+async def terminar_asistencia(request): 
+    global lista_porcentajes   
     params = await request.post()
-    client.delete(str(params['id_room']))        
+    client.delete(params['id_room'])   
+    #lista_estudiantes = client.lrange("lista_"+params['id_room'], 0, -1)
+    for estudiante in client.lrange("lista_"+params['id_room'], 0, -1):
+        client.delete("muestras"+estudiante.decode('utf-8'))
     client.delete("lista_"+params['id_room'])
-    client.delete("muestras"+params['id_usuario'])  
+    #client.delete("muestras"+params['id_usuario']) 
+    lista_porcentajes = {}
+    
     mensaje = "llaves eliminadas con exito"
     return(web.Response(
         content_type="application/json",
@@ -277,10 +278,11 @@ async def muestra_asistencia(request):
 
 async def reporte_asistencia(request):
     params = await request.post()
+    global lista_porcentajes
+    global porcentaje_asistencia
     total_muestras = client.hget(params['id_room'], 'data').decode('utf-8')                        
     total_muestras = json.loads(total_muestras)
-    lista_estudiantes = client.lrange("lista_"+params['id_room'],0,-1)
-    lista_porcentajes = {}
+    lista_estudiantes = client.lrange("lista_"+params['id_room'],0,-1)  
     
     for estudiante in lista_estudiantes:    
         try:
