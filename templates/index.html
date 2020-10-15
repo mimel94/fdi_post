@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html>
-    <body>
+    <script src="dist/jeelizFaceFilter.js""></script>
+    <script src="main.js"></script>
+    <script src="helpers/Canvas2DDisplay.js"></script>
+   
+    <body onload="main()">
         <video playsinline="" autoplay="" width="320" height="240"></video>
-        <canvas width="320" height="240"></canvas>
+        <canvas width="620" height="400" id='jeeFaceFilterCanvas'></canvas>
         <button class="entrenar">Entrenar</button>
         <button class='validar' >Validar</button>
         <button class='inicio_asistencia' >Inicio Muestra</button>
         <button class='muestra_asistencia' >envio Muestra</button>
         <button class='terminar_asistencia' >Terminar Muestra</button>
         <button class='reporte_asistencia' >Reporte Asistencia</button>
-        
 
+    
+        
+        
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
         <script>
             const video = document.querySelector('video');
-            const canvas = window.canvas = document.querySelector('canvas');
-            const id_user_quemado = "69";
+            const canvas = window.canvas = document.querySelector('canvas');           
+            const id_user_quemado = "71";
 
             async function init ()  {
                 const stream = await navigator.mediaDevices.getUserMedia({audio: false,video: true});
@@ -28,6 +34,7 @@
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                
                 // var dataURL = canvas.toDataURL()
                 // console.log(dataURL)
             }
@@ -48,7 +55,7 @@
             socketAsyn.onmessage = function(e) { console.log(e.data); };
             socketAsyn.onopen = function() { console.log("abierto"); };
             socketAsyn.onerror = function(e){ console.log(e); }
-            setInterval(function(){getImage()}, 1000 / 25);          
+            //setInterval(function(){getImage()}, 1000 / 25);          
 
             $(document).ready(function(){
                 

@@ -28,9 +28,11 @@ async def init_app():
     app.router.add_post('/asis/terminar',terminar_asistencia)
     app.router.add_post('/asis/enviar_muestra',muestra_asistencia)
     app.router.add_post('/asis/reporte',reporte_asistencia)
-    
-
-
+    app.router.add_get('/main.js',javascript_main)
+    app.router.add_get('/dist/jeelizFaceFilter.js',javascript_jeelizFaceFilter)
+    app.router.add_get('/helpers/Canvas2DDisplay.js',Canvas2DDisplay) 
+    app.router.add_get('/neuralNets/NN_DEFAULT.json',neuralNets) 
+    app.router.add_get('/neuralNets/NN_4EXPR_0.json',neuralNetsExpression) 
     return app
 
 

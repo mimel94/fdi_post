@@ -68,6 +68,27 @@ client = redis.Redis(host='localhost', port= 6379)
 async def index(request):   
     return aiohttp_jinja2.render_template('index.html', request,{})
 
+async def javascript_main(request):
+    content = open(os.path.join("main.js"), "r").read()
+    return web.Response(content_type="application/javascript", text=content)
+
+async def javascript_jeelizFaceFilter(request):
+    content = open(os.path.join("dist/jeelizFaceFilter.js"), "r").read()
+    return web.Response(content_type="application/javascript",text=content)
+
+async def Canvas2DDisplay(request):
+    content = open(os.path.join("helpers/Canvas2DDisplay.js"), "r").read()
+    return web.Response(content_type="application/javascript", text=content)
+
+async def neuralNets(request):
+    content = open(os.path.join("neuralNets/NN_DEFAULT.json"), "r").read()
+    return web.Response(content_type="application/json", text=content)
+
+async def neuralNetsExpression(request):
+    content = open(os.path.join("neuralNets/NN_4EXPR_0.json"), "r").read()
+    return web.Response(content_type="application/json", text=content)
+
+
 async def estado(request):
     params = await request.post()    
     rutaHaar = RUTA_ABS + '/vision/embeddings/'+ str(params['id_usuario']) 
