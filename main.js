@@ -32,7 +32,7 @@ function main(){
           const mouthSmile = expr[1];
           const eyebrowFrown = expr[2];
           const eyebrowRaised = expr[3];
-          if (mouthSmile > 0.6){
+          if (mouthSmile > 0.5){
             //console.log("feliz");         
             CVD.ctx.fillText("",0,0);
             CVD.ctx.fillText("Feliz",faceCoo.x,faceCoo.y);
