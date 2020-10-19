@@ -13,6 +13,7 @@
         <button class='muestra_asistencia' >envio Muestra</button>
         <button class='terminar_asistencia' >Terminar Muestra</button>
         <button class='reporte_asistencia' >Reporte Asistencia</button>
+        <button class='estado' >Estado usuario</button>
 
     
         
@@ -22,7 +23,7 @@
         <script>
             const video = document.querySelector('video');
             const canvas = window.canvas = document.querySelector('canvas');           
-            const id_user_quemado = "71";
+            const id_user_quemado = "69";
 
             async function init ()  {
                 const stream = await navigator.mediaDevices.getUserMedia({audio: false,video: true});
@@ -58,6 +59,21 @@
             //setInterval(function(){getImage()}, 1000 / 25);          
 
             $(document).ready(function(){
+
+                $('.estado').click(function(){      
+                                  
+                    let mensaje = {"id_usuario":id_user_quemado};
+                    $.ajax({
+                        url : 'http://localhost:8080/estado',
+                        method : 'POST',
+                        data : mensaje,                        
+                        dataType: 'text',
+                        success : function(data){
+                            //alert('se envio ok')
+                            console.log(data)
+                        }
+                    });               
+                });
                 
                 $('.validar').click(function(){
                     var data64 = canvas.toDataURL();

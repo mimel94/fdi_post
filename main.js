@@ -1,9 +1,18 @@
-function main(){
-  let CVD = null; // return of Canvas2DDisplay
+function detect_callback(faceIndex, isDetected){
+  if (isDetected){
+    console.log('INFO in detect_callback(): face n°', faceIndex, 'DETECTED');
+  } else {
+    console.log('INFO in detect_callback(): face n°', faceIndex, 'LOST');
+  }
+}
+
+function main(){  
+  let CVD = null; // return of Canvas2DDisplay  
 
   JEEFACEFILTERAPI.init({
     canvasId: 'jeeFaceFilterCanvas',
     NNCPath: 'neuralNets/NN_4EXPR_0.json', // root of NN_DEFAULT.json file
+    //maxFacesDetected:SETTINGS.maxFaces,
     callbackReady: function(errCode, spec){
       if (errCode){
         console.log('AN ERROR HAPPENS. SORRY BRO :( . ERR =', errCode);
@@ -16,9 +25,11 @@ function main(){
     },
 
     // called at each render iteration (drawing loop):
-    callbackTrack: function(detectState){
-      if (detectState.detected>0.89){
+    callbackTrack: function(detectState){      
+      
+      if (detectState.detected>0.95){
         // draw a border around the face:
+        //console.log(detectState.)
         const faceCoo = CVD.getCoordinates(detectState);
         CVD.ctx.clearRect(0,0,CVD.canvas.width, CVD.canvas.height);
         CVD.ctx.strokeRect(faceCoo.x, faceCoo.y, faceCoo.w, faceCoo.h);

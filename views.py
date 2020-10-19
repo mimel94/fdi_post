@@ -91,7 +91,8 @@ async def neuralNetsExpression(request):
 
 async def estado(request):
     params = await request.post()    
-    rutaHaar = RUTA_ABS + '/vision/embeddings/'+ str(params['id_usuario']) 
+    rutaHaar = 'vision/embeddings/'+ str(params['id_usuario']) 
+    
     if os.path.exists(rutaHaar+'/'+str(params['id_usuario'])+'.npy'):
         #await ws.send_str("{'accion':'entrenado'}")    
         mensaje = {'accion':'iniciando','status':'1'}
