@@ -17,7 +17,7 @@ function main(){
 
     // called at each render iteration (drawing loop):
     callbackTrack: function(detectState){
-      if (detectState.detected>0.6){
+      if (detectState.detected>0.89){
         // draw a border around the face:
         const faceCoo = CVD.getCoordinates(detectState);
         CVD.ctx.clearRect(0,0,CVD.canvas.width, CVD.canvas.height);
@@ -34,17 +34,18 @@ function main(){
           const eyebrowRaised = expr[3];
           if (mouthSmile > 0.6){
             //console.log("feliz");         
-           
+            CVD.ctx.fillText("",0,0);
             CVD.ctx.fillText("Feliz",faceCoo.x,faceCoo.y);
           }
-          if(mouthOpen > 0.27 || eyebrowRaised >0.2){
-            //console.log("sorprendido");                                         
+          else if(mouthOpen > 0.27 || eyebrowRaised >0.2){
+            //console.log("sorprendido");      
+            CVD.ctx.fillText("",0,0);                                   
             CVD.ctx.fillText("Sorprendido",faceCoo.x,faceCoo.y);
             
           }
-          if (eyebrowFrown>0.2){
+          else if (eyebrowFrown>0.2){
             //console.log("Triste")
-            
+            CVD.ctx.fillText("",0,0);
             CVD.ctx.fillText("Triste",faceCoo.x,faceCoo.y);
           }        
           }else{
