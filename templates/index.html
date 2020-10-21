@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
-    <script src="dist/jeelizFaceFilter.js""></script>
-    <script src="main.js"></script>
+    <!--<script src="gazefilter.js"></script>-->
+    <script src="dist/jeelizFaceFilter.js""></script>    
     <script src="helpers/Canvas2DDisplay.js"></script>
+    
+    
+   
    
     <body onload="main()">
         <video playsinline="" autoplay="" width="320" height="240"></video>
@@ -19,8 +22,11 @@
         
         
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
         <script>
+
+            
             const video = document.querySelector('video');
             const canvas = window.canvas = document.querySelector('canvas');           
             const id_user_quemado = "69";
@@ -52,12 +58,15 @@
             }*/
 
             init();
-            var socketAsyn = new WebSocket("ws://192.168.100.218:8080/ws?room=viclass");
-            socketAsyn.onmessage = function(e) { console.log(e.data); };
-            socketAsyn.onopen = function() { console.log("abierto"); };
-            socketAsyn.onerror = function(e){ console.log(e); }
+            //var socketAsyn = new WebSocket("ws://192.168.100.218:8080/ws?room=viclass");
+            //socketAsyn.onmessage = function(e) { console.log(e.data); };
+            //socketAsyn.onopen = function() { console.log("abierto"); };
+            //socketAsyn.onerror = function(e){ console.log(e); }
             //setInterval(function(){getImage()}, 1000 / 25);          
 
+
+          
+    
             $(document).ready(function(){
 
                 $('.estado').click(function(){      
@@ -92,7 +101,7 @@
                 });
                 $('.entrenar').click(function(){
                     var data64 = canvas.toDataURL();
-                    let mensaje = {"data":data64,"accion":"entrenar","id_usuario":id_user_quemado};
+                    let mensaje = {"data":data64,"accion":"entrenar","id_usuario":id_user_quemado};   
                     $.ajax({
                         url : 'http://localhost:8080/entrenar',
                         method : 'POST',
@@ -167,6 +176,7 @@
 
             });  
         </script>
-        
+        <script src="main.js"></script>
+        <!--<script src="pupil.js"></script>-->
     </body>
 </html>

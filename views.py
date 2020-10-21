@@ -66,8 +66,9 @@ client = redis.Redis(host='localhost', port= 6379)
    
 
 async def index(request):   
-    return aiohttp_jinja2.render_template('index.html', request,{})
-
+    content = open(os.path.join("templates/index.html"), "r").read()    
+    return  web.Response(content_type="text/html",text=content)
+    
 async def javascript_main(request):
     content = open(os.path.join("main.js"), "r").read()
     return web.Response(content_type="application/javascript", text=content)
@@ -80,6 +81,10 @@ async def Canvas2DDisplay(request):
     content = open(os.path.join("helpers/Canvas2DDisplay.js"), "r").read()
     return web.Response(content_type="application/javascript", text=content)
 
+async def neuralNetsNNC(request):
+    content = open(os.path.join("neuralNets/NNC.json"), "r").read()
+    return web.Response(content_type="application/json", text=content)
+
 async def neuralNets(request):
     content = open(os.path.join("neuralNets/NN_DEFAULT.json"), "r").read()
     return web.Response(content_type="application/json", text=content)
@@ -88,6 +93,22 @@ async def neuralNetsExpression(request):
     content = open(os.path.join("neuralNets/NN_4EXPR_0.json"), "r").read()
     return web.Response(content_type="application/json", text=content)
 
+async def pupil_tracker(request):
+    content = open(os.path.join("pupil.js"),"r").read()
+    return web.Response(content_type="application/javascript", text=content)
+
+async def gazefilter(request):
+    content = open(os.path.join("gazefilter.js"), "r").read()
+    return web.Response(content_type="application/javascript", text=content)
+
+async def NNCveryLight(request):
+    content = open(os.path.join("neuralNets/NNCveryLight.json"), "r").read()
+    return web.Response(content_type="application/json", text=content)
+
+async def model_puploc(request):
+    content = open(os.path.join("model/puploc.bin"), "rb").read()
+    
+    return web.Response(content_type="application/octet-stream", body=content)
 
 async def estado(request):
     params = await request.post()    
@@ -107,9 +128,11 @@ async def estado(request):
     ) 
    
 async def entrenar(request):     
-    params = await request.post()     
-    rutaHaar = 'vision/embeddings/'+ str(params['id_usuario']) 
-    frame = params['data'].split(';base64,')
+    formData = await request.post()
+    # import ipdb; ipdb.set_trace();
+    id_usuario = str(formData['id_usuario'])
+    rutaHaar = 'vision/embeddings/'+ id_usuario 
+    frame = formData['data'].split(';base64,')
     image = Image.open(BytesIO(base64.b64decode(frame[1])))
     #image.save('accept.png', 'PNG')     
     image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
@@ -129,18 +152,18 @@ async def entrenar(request):
             phase_train_placeholder=phase_train_placeholder,
             image_size=image_size
         )      
-        filename = str(params['id_usuario'])        
+        filename = id_usuario        
         save_embedding(
             embedding=embedding,
             filename=filename,
             embeddings_path=rutaHaar
         )   
-        mensaje = "{'accion':'entrenado'}"
+        mensaje = {'accion':'entrenado','razon':'Entrenado'}
     elif len(faces) > 1:
-        mensaje = "{'accion':'no_entrenado','razon':'multiples rostros detectados'}"
+        mensaje = {'accion':'no_entrenado','razon':'multiples rostros detectados'}
         print('multiples rostros detectados')
     else:
-        mensaje = "{'accion':'no_entrenado','razon':'No se detecto rostro'}"
+        mensaje = {'accion':'no_entrenado','razon':'No se detecto rostro'}
         print('ningun rostro detectado') 
     
 
@@ -152,8 +175,9 @@ async def entrenar(request):
     )      
 
 async def validar(request):
-    params = await request.post()     
-    frame = params['data'].split(';base64,')
+    formData = await request.post()
+    id_usuario = str(formData['id_usuario'])     
+    frame = formData['data'].split(';base64,')
     image = Image.open(BytesIO(base64.b64decode(frame[1])))  
     image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     faces,_ = get_faces_live(
@@ -163,7 +187,7 @@ async def validar(request):
         onet = onet,
         image_size = image_size
     )     
-    embedding_dict = load_embeddings(params['id_usuario'])                                   
+    embedding_dict = load_embeddings(formData['id_usuario'])                                   
     if len(faces)==1:                                                                                                                                  
         face_embedding = forward_pass(
             img = faces[0],
@@ -179,18 +203,18 @@ async def validar(request):
             embedding_dict=embedding_dict
         )                                            
                                                  
-        if status == True:                
-            mensaje = "{'accion':'comparado','resultado':'1'}"                                             
+        if status == True:               
+            mensaje = {'accion':'1','razon':'Identificado'}                                          
             print('identificado')
         else:
-            mensaje = "{'accion':'comparado','resultado':'0'}"                                             
+            mensaje = {'accion':'0','razon':'No identificado'}                                             
             print('No identificado')  
          
     elif len(faces) > 1:
-        mensaje = "{'accion':'comparado','resultado':'0','error':'multiples rostros detectados'}"                                             
+        mensaje = {'accion':'No identificado','razon':'Multiples rostros detectados'}                                             
         print('multiples rostros detectados')
     else:
-        mensaje = "{'accion':'comparado','resultado':'0','error':'ningun rostro detectado'}"                                             
+        mensaje = {'accion':'No identificado','razon':'Ningún rostro detectado'}                                             
         print('ningun rostro detectado')
     
     return web.Response(

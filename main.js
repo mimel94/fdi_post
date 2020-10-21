@@ -1,25 +1,17 @@
-function detect_callback(faceIndex, isDetected){
-  if (isDetected){
-    console.log('INFO in detect_callback(): face n°', faceIndex, 'DETECTED');
-  } else {
-    console.log('INFO in detect_callback(): face n°', faceIndex, 'LOST');
-  }
-}
-
 function main(){  
   let CVD = null; // return of Canvas2DDisplay  
 
   JEEFACEFILTERAPI.init({
     canvasId: 'jeeFaceFilterCanvas',
-    NNCPath: 'neuralNets/NN_4EXPR_0.json', // root of NN_DEFAULT.json file
+    NNCPath: 'neuralNets/NN_4EXPR_0.json', // root of NN_DEFAULT.json file    
     //maxFacesDetected:SETTINGS.maxFaces,
     callbackReady: function(errCode, spec){
       if (errCode){
-        console.log('AN ERROR HAPPENS. SORRY BRO :( . ERR =', errCode);
+        console.log('Ocurrio un error, lo chento :( . ERROR =', errCode);
         return;
       }
 
-      console.log('INFO: JEEFACEFILTERAPI IS READY');
+      console.log('INFO: JEEFACEFILTERAPI ESTA LISTO');
       CVD = JeelizCanvas2DHelper(spec);
       CVD.ctx.strokeStyle = 'yellow';
     },
@@ -45,12 +37,12 @@ function main(){
           const eyebrowRaised = expr[3];
           if (mouthSmile > 0.5){
             //console.log("feliz");         
-            CVD.ctx.fillText("",0,0);
+            
             CVD.ctx.fillText("Feliz",faceCoo.x,faceCoo.y);
           }
           else if(mouthOpen > 0.27 || eyebrowRaised >0.2){
             //console.log("sorprendido");      
-            CVD.ctx.fillText("",0,0);                                   
+                                               
             CVD.ctx.fillText("Sorprendido",faceCoo.x,faceCoo.y);
             
           }
@@ -74,4 +66,25 @@ function main(){
       CVD.draw();
     }
   }); //end JEEFACEFILTERAPI.init call
+   /* gazefilter.tracker.init({ // 1
+      nnc: 'neuralNets/NNCveryLight.json',
+      //nnc: 'neuralNets/NN_4EXPR_0.json',
+      puploc: 'model/puploc.bin',
+    });
+    const canvas = document.getElementById('jeeFaceFilterCanvas');
+
+    gazefilter.visualizer.setCanvas(canvas); // 2  
+
+
+    gazefilter.tracker.connect();  // 3
+
+    console.log(gazefilter.tracker.detected);*/
+
+    
+    
+
+    
+    
+    
+
 } //end main()
