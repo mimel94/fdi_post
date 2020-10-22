@@ -29,6 +29,7 @@ from utils import (
     save_image
 )
 from datetime import datetime, date, time, timedelta
+from gaze_tracking import GazeTracking
 
 # Load FaceNet model and configure placeholders for forward pass into the FaceNet model to calculate embeddings
 model_path = 'model/20170512-110547/20170512-110547.pb'
@@ -62,7 +63,8 @@ pnet, rnet, onet = detect_face.create_mtcnn(sess=facenet_persistent_session, mod
 
 rutaHarr=''
 global client
-client = redis.Redis(host='192.168.99.125', port= 6379)
+#client = redis.Redis(host='192.168.99.125', port= 6379)
+client = redis.Redis(host='localhost', port= 6379)
 
 
 async def index(request):
@@ -259,11 +261,12 @@ async def terminar_asistencia(request):
         ),
     ))
 
-async def muestra_asistencia(request):
-    print('fdddfdasdedfgferglnerfiernfergberkj')
+async def muestra_asistencia(request):    
     formData = await request.post()
     frame = formData['data'].split(';base64,')
+    gaze = GazeTracking()
     image = Image.open(BytesIO(base64.b64decode(frame[1])))
+    imageGaze = image
     image = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     faces,_ = get_faces_live(
         img = image,
@@ -288,6 +291,14 @@ async def muestra_asistencia(request):
         )
         if status == True:
             lista_asistencia = client.lrange("lista_"+formData['id_room'], 0, -1)
+            #imageGaze = cv2.cvtColor(imageGaze, cv2.COLOR_BGR2RGB)                        
+            imageGaze = np.array(imageGaze)
+            gaze.refresh(imageGaze)
+            ratioHorizontal = gaze.horizontal_ratio()
+            ratioVertical = gaze.vertical_ratio()           
+            
+            text = {'ratioH':ratioHorizontal,'ratioV':ratioVertical}
+            
             print(">lista asistencia",lista_asistencia)
             for estudiante in lista_asistencia:
                 if estudiante.decode("utf-8").lower() == formData['id_usuario'].lower():
@@ -306,15 +317,22 @@ async def muestra_asistencia(request):
                             contador_asistencia+=1
                             client.set("muestras"+formData['id_usuario'],contador_asistencia)
                             print("contador despues del if:",contador_asistencia)
+                    #gaze atention
+
                 else:
                     print("no entro en la comparacion")
+            mensaje = {'gaze':text,'contador':contador_asistencia}
+            #mensaje = {'contador':contador_asistencia}
+
+
+                
         else:
-            print("no identificado")
+            mensaje = {'no identificdado':0}
 
         return(web.Response(
         content_type="application/json",
         text=json.dumps(
-            contador_asistencia
+            mensaje
         ),
     ))
 
