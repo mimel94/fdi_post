@@ -30,6 +30,8 @@ from utils import (
 )
 from datetime import datetime, date, time, timedelta
 from gaze_tracking import GazeTracking
+from libfaceid.emotion import FaceEmotionEstimatorModels, FaceEmotionEstimator
+INPUT_DIR_MODEL_ESTIMATION      = "models/estimation/"
 
 # Load FaceNet model and configure placeholders for forward pass into the FaceNet model to calculate embeddings
 model_path = 'model/20170512-110547/20170512-110547.pb'
@@ -291,21 +293,25 @@ async def muestra_asistencia(request):
         )
         if status == True:
             lista_asistencia = client.lrange("lista_"+formData['id_room'], 0, -1)
-            #imageGaze = cv2.cvtColor(imageGaze, cv2.COLOR_BGR2RGB)                        
+            #imageGaze = cv2.cvtColor(imageGaze, cv2.COLOR_BGR2RGB)        
+            face_emotion_estimator = FaceEmotionEstimator(model=FaceEmotionEstimatorModels.KERAS, path=INPUT_DIR_MODEL_ESTIMATION)                
+            
             imageGaze = np.array(imageGaze)
+            #emotion = json.dumps(face_emotion_estimator.estimate(imageGaze, face))
+            emotion = face_emotion_estimator.estimate(imageGaze, face)
             gaze.refresh(imageGaze)
             ratioHorizontal = gaze.horizontal_ratio()
             ratioVertical = gaze.vertical_ratio()           
             
             text = {'ratioH':ratioHorizontal,'ratioV':ratioVertical}
             
-            print(">lista asistencia",lista_asistencia)
+            #print(">lista asistencia",lista_asistencia)
             for estudiante in lista_asistencia:
                 if estudiante.decode("utf-8").lower() == formData['id_usuario'].lower():
                     try:
                         contador_asistencia = client.get("muestras"+formData['id_usuario'])
                         contador_asistencia = int(contador_asistencia.decode("utf-8"))
-                        print("contador antes del if:",contador_asistencia)
+                        #print("contador antes del if:",contador_asistencia)
                     except:
                         pass
                     if not contador_asistencia:
@@ -316,12 +322,13 @@ async def muestra_asistencia(request):
                         if contador_asistencia < int(total_muestras['total_muestras']):
                             contador_asistencia+=1
                             client.set("muestras"+formData['id_usuario'],contador_asistencia)
-                            print("contador despues del if:",contador_asistencia)
+                            #print("contador despues del if:",contador_asistencia)
                     #gaze atention
 
                 else:
-                    print("no entro en la comparacion")
-            mensaje = {'gaze':text,'contador':contador_asistencia}
+                    #print("no entro en la comparacion")
+                    pass
+            mensaje = {'gaze':text,'contador':contador_asistencia,'Emociones':emotion}
             #mensaje = {'contador':contador_asistencia}
 
 

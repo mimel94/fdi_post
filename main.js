@@ -38,18 +38,18 @@ function main(){
           if (mouthSmile > 0.5){
             //console.log("feliz");         
             
-            CVD.ctx.fillText("Feliz",faceCoo.x,faceCoo.y);
+            //CVD.ctx.fillText("Feliz",faceCoo.x,faceCoo.y);
           }
           else if(mouthOpen > 0.27 || eyebrowRaised >0.2){
             //console.log("sorprendido");      
                                                
-            CVD.ctx.fillText("Sorprendido",faceCoo.x,faceCoo.y);
+            //CVD.ctx.fillText("Sorprendido",faceCoo.x,faceCoo.y);
             
           }
           else if (eyebrowFrown>0.2){
             //console.log("Triste")
-            CVD.ctx.fillText("",0,0);
-            CVD.ctx.fillText("Triste",faceCoo.x,faceCoo.y);
+            //CVD.ctx.fillText("",0,0);
+            //CVD.ctx.fillText("Triste",faceCoo.x,faceCoo.y);
           }        
           }else{
             CVD.ctx.fillText("",0,0);
