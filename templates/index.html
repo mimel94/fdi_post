@@ -73,7 +73,7 @@
                                   
                     let mensaje = {"id_usuario":id_user_quemado};
                     $.ajax({
-                        url : 'http://localhost:8080/estado',
+                        url : 'http://localhost:8080/aiortc/estado',
                         method : 'POST',
                         data : mensaje,                        
                         dataType: 'text',
@@ -88,7 +88,7 @@
                     var data64 = canvas.toDataURL();
                     let mensaje = {"data":data64,"accion":"validar","id_usuario":id_user_quemado};
                     $.ajax({
-                        url : 'http://localhost:8080/validar',
+                        url : 'http://localhost:8080/aiortc/validar',
                         method : 'POST',
                         data : mensaje,                        
                         dataType: 'text',
@@ -103,7 +103,7 @@
                     var data64 = canvas.toDataURL();
                     let mensaje = {"data":data64,"accion":"entrenar","id_usuario":id_user_quemado};   
                     $.ajax({
-                        url : 'http://localhost:8080/entrenar',
+                        url : 'http://localhost:8080/aiortc/entrenar',
                         method : 'POST',
                         data : mensaje,                        
                         dataType: 'text',
@@ -117,7 +117,7 @@
                 $('.inicio_asistencia').click(function(){                   
                     let mensaje = {"id_usuario":id_user_quemado,"id_room":"12345","seg_tick":1200,"datetime_inicio":"2018-06-29 10:00:00","datetime_fin":"2018-06-29 11:30:00"};
                     $.ajax({
-                        url : 'http://localhost:8080/asis/iniciar',
+                        url : 'http://localhost:8080/aiortc/iniciar',
                         method : 'POST',
                         data : mensaje,                        
                         dataType: 'text',
@@ -131,7 +131,7 @@
                 $('.terminar_asistencia').click(function(){                   
                     let mensaje = {"id_usuario":id_user_quemado,"id_room":"12345"};
                     $.ajax({
-                        url : 'http://localhost:8080/asis/terminar',
+                        url : 'http://localhost:8080/aiortc/terminar',
                         method : 'POST',
                         data : mensaje,                        
                         dataType: 'text',
@@ -146,7 +146,7 @@
                     var data64 = canvas.toDataURL();                                  
                     let mensaje = {"data":data64,"id_usuario":id_user_quemado,"id_room":"12345"};
                     $.ajax({
-                        url : 'http://localhost:8080/asis/enviar_muestra',
+                        url : 'http://localhost:8080/aiortc/enviar_muestra',
                         method : 'POST',
                         data : mensaje,                        
                         dataType: 'text',
@@ -161,7 +161,7 @@
                     var data64 = canvas.toDataURL();                                  
                     let mensaje = {"data":data64,"id_usuario":id_user_quemado,"id_room":"12345"};
                     $.ajax({
-                        url : 'http://localhost:8080/asis/reporte',
+                        url : 'http://localhost:8080/aiortc/reporte',
                         method : 'POST',
                         data : mensaje,                        
                         dataType: 'text',
